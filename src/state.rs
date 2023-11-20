@@ -1,5 +1,5 @@
-use cosmwasm_std::{coin, Addr, Coin, DepsMut, MessageInfo, Timestamp};
-use cw721::Expiration;
+use cosmwasm_std::{coin, Coin, Timestamp};
+
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,6 @@ pub struct Config {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Collection {
-    pub address: String,      // nft collection ca
     pub reward: Coin,         // rewards coin denom & amount
     pub cycle: u64,           // reward cycle
     pub is_whitelisted: bool, // is whitelisted for staking
@@ -20,25 +19,24 @@ pub struct Collection {
 impl Collection {
     pub fn default() -> Self {
         Collection {
-            address: String::from_str("").unwrap(),
             reward: coin(0, "inj"),
             cycle: 604_800, // 1 week = 7 * 24 * 60 * 60 * 1000,
             is_whitelisted: true,
         }
     }
-    pub fn new(address: String, reward: Coin, cycle: u64) -> Self {
+    pub fn new(reward: Coin, cycle: u64, is_whitelisted: bool) -> Self {
         Collection {
-            address,
             reward,
             cycle,
-            is_whitelisted: true,
+            is_whitelisted: is_whitelisted,
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Staking {
-    pub owner: String, // nft collection ca
+    pub owner: String,
+    pub token_address: String, // nft collection ca
     pub token_id: String,
     pub start_timestamp: Timestamp,
     pub end_timestamp: Timestamp,
@@ -48,19 +46,27 @@ impl Staking {
     pub fn default() -> Self {
         Staking {
             owner: String::from_str("").unwrap(),
+            token_address: String::from_str("").unwrap(),
             token_id: String::from_str("").unwrap(),
             start_timestamp: Timestamp::from_seconds(0),
             end_timestamp: Timestamp::from_seconds(0),
             is_paid: false,
         }
     }
-    pub fn new(owner: String, token_id: String, start_timestamp: Timestamp) -> Self {
+    pub fn new(
+        owner: String,
+        token_address: String,
+        token_id: String,
+        start_timestamp: Timestamp,
+        is_paid: bool,
+    ) -> Self {
         Staking {
             owner,
+            token_address,
             token_id,
             start_timestamp,
             end_timestamp: Timestamp::from_seconds(0),
-            is_paid: false,
+            is_paid,
         }
     }
 }

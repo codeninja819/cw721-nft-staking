@@ -8,4 +8,7 @@ pub enum ContractError {
 
     #[error("Unauthorized address")]
     Unauthorized {},
+
+    #[error("Unknown")]
+    Unknown {},
 }
