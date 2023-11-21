@@ -94,7 +94,8 @@ pub fn stake(
             .add_attribute("token_address", token_address)
             .add_attribute("token_id", msg.token_id)
             .add_attribute("owner", owner)
-            .add_attribute("start_timestamp", env.block.time.to_string()),
+            .add_attribute("start_timestamp", env.block.time.to_string())
+            .add_attribute("index", stakings_state.len().to_string()),
     ))
 }
 
@@ -121,7 +122,7 @@ pub fn unstake(
         })?,
         funds: vec![],
     });
-    STAKINGS.save(store, owner.clone(), &stakings_state);
+    let _ = STAKINGS.save(store, owner.clone(), &stakings_state);
     Ok(Response::new()
         .add_event(
             Event::new("unstaked")
@@ -132,10 +133,8 @@ pub fn unstake(
                     "start_timestamp",
                     staking_info.start_timestamp.seconds().to_string(),
                 )
-                .add_attribute(
-                    "end_timestamp",
-                    staking_info.end_timestamp.seconds().to_string(),
-                ),
+                .add_attribute("end_timestamp", env.block.time.seconds().to_string())
+                .add_attribute("index", index.to_string()),
         )
         .add_message(transfer_msg))
 }
@@ -161,13 +160,32 @@ pub fn claim(
     let reward = u128::from(collection.reward.amount)
         & u128::from(staking_info.end_timestamp.seconds() - staking_info.start_timestamp.seconds())
             / &u128::from(collection.cycle);
-    let transfer_msg = BankMsg::Send {
-        to_address: owner.clone(),
-        amount: vec![coin(reward, collection.reward.denom)],
-    };
     let _ = STAKINGS.save(store, owner.clone(), &stakings_state);
-    Ok(Response::new()
-        .add_event(
+    if reward > 0 {
+        let transfer_msg = BankMsg::Send {
+            to_address: owner.clone(),
+            amount: vec![coin(reward, collection.clone().reward.denom)],
+        };
+        Ok(Response::new()
+            .add_event(
+                Event::new("claimed")
+                    .add_attribute("token_address", staking_info.token_address.clone())
+                    .add_attribute("token_id", staking_info.token_id.clone())
+                    .add_attribute("owner", owner)
+                    .add_attribute(
+                        "start_timestamp",
+                        staking_info.start_timestamp.seconds().to_string(),
+                    )
+                    .add_attribute(
+                        "end_timestamp",
+                        staking_info.end_timestamp.seconds().to_string(),
+                    )
+                    .add_attribute("reward", coin(reward, collection.reward.denom).to_string())
+                    .add_attribute("index", index.to_string()),
+            )
+            .add_message(transfer_msg))
+    } else {
+        Ok(Response::new().add_event(
             Event::new("unstaked")
                 .add_attribute("token_address", staking_info.token_address.clone())
                 .add_attribute("token_id", staking_info.token_id.clone())
@@ -179,9 +197,11 @@ pub fn claim(
                 .add_attribute(
                     "end_timestamp",
                     staking_info.end_timestamp.seconds().to_string(),
-                ),
-        )
-        .add_message(transfer_msg))
+                )
+                .add_attribute("reward", coin(reward, collection.reward.denom).to_string())
+                .add_attribute("index", index.to_string()),
+        ))
+    }
 }
 
 // check message sender is contract owner.
