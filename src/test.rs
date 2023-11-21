@@ -2,14 +2,16 @@
 mod tests {
     use cosmwasm_std::{coin, to_json_binary, Addr, CosmosMsg, Empty, Timestamp};
     use cw_multi_test::{App, Contract, ContractWrapper, Executor};
+    use schemars::JsonSchema;
 
     use crate::{
         contract::{execute, instantiate, query},
         msg::{CollectionResponse, ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
+        state::Staking,
     };
 
     #[test]
-    fn test_transfer_owner() {
+    fn test_staking() {
         let mut app = App::default();
         let owner: Addr = Addr::unchecked("owner");
         let cw721_base_code_id = app.store_code(cw721_base_contract());
@@ -113,14 +115,101 @@ mod tests {
             )
             .unwrap();
 
-        let resp: Vec<CollectionResponse> = app
+        let resp: Vec<Staking> = app
             .wrap()
             .query_wasm_smart(
                 staking_contract_address.clone(),
-                &QueryMsg::GetCollections {},
+                &QueryMsg::GetStakingsByOwner {
+                    owner: owner.clone().to_string(),
+                },
             )
             .unwrap();
-        assert_eq!(resp.len(), 1);
+        assert_eq!(
+            resp[0].token_address,
+            cw721_base_contract_address.clone().to_string()
+        );
+        assert_eq!(resp[0].token_id, "0".to_owned());
+        assert_ne!(resp[0].start_timestamp, Timestamp::from_seconds(0));
+        assert_eq!(resp[0].end_timestamp, Timestamp::from_seconds(0));
+        assert_eq!(resp[0].is_paid, false);
+
+        let resp: cw721::OwnerOfResponse = app
+            .wrap()
+            .query_wasm_smart(
+                cw721_base_contract_address.clone(),
+                &cw721_base::QueryMsg::<Empty>::OwnerOf {
+                    token_id: "0".to_owned(),
+                    include_expired: Some(true),
+                },
+            )
+            .unwrap();
+        assert_eq!(resp.owner, staking_contract_address.clone().to_string());
+
+        let _ = app
+            .execute_contract(
+                owner.clone(),
+                staking_contract_address.clone(),
+                &ExecuteMsg::Unstake { index: 0 },
+                &vec![],
+            )
+            .unwrap();
+
+        let resp: Vec<Staking> = app
+            .wrap()
+            .query_wasm_smart(
+                staking_contract_address.clone(),
+                &QueryMsg::GetStakingsByOwner {
+                    owner: owner.clone().to_string(),
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            resp[0].token_address,
+            cw721_base_contract_address.clone().to_string()
+        );
+        assert_eq!(resp[0].token_id, "0".to_owned());
+        assert_ne!(resp[0].start_timestamp, Timestamp::from_seconds(0));
+        assert_ne!(resp[0].end_timestamp, Timestamp::from_seconds(0));
+        assert_eq!(resp[0].is_paid, false);
+
+        let resp: cw721::OwnerOfResponse = app
+            .wrap()
+            .query_wasm_smart(
+                cw721_base_contract_address.clone(),
+                &cw721_base::QueryMsg::<Empty>::OwnerOf {
+                    token_id: "0".to_owned(),
+                    include_expired: Some(true),
+                },
+            )
+            .unwrap();
+        assert_eq!(resp.owner, owner.clone().to_string());
+
+        let _ = app
+            .execute_contract(
+                owner.clone(),
+                staking_contract_address.clone(),
+                &ExecuteMsg::ClaimReward { index: 0 },
+                &vec![],
+            )
+            .unwrap();
+
+        let resp: Vec<Staking> = app
+            .wrap()
+            .query_wasm_smart(
+                staking_contract_address.clone(),
+                &QueryMsg::GetStakingsByOwner {
+                    owner: owner.clone().to_string(),
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            resp[0].token_address,
+            cw721_base_contract_address.clone().to_string()
+        );
+        assert_eq!(resp[0].token_id, "0".to_owned());
+        assert_ne!(resp[0].start_timestamp, Timestamp::from_seconds(0));
+        assert_ne!(resp[0].end_timestamp, Timestamp::from_seconds(0));
+        assert_eq!(resp[0].is_paid, true);
     }
 
     fn staking_contract() -> Box<dyn Contract<Empty>> {

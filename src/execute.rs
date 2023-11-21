@@ -161,14 +161,10 @@ pub fn claim(
     let reward = u128::from(collection.reward.amount)
         & u128::from(staking_info.end_timestamp.seconds() - staking_info.start_timestamp.seconds())
             / &u128::from(collection.cycle);
-    let transfer_msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
-        contract_addr: staking.token_address.clone(),
-        msg: to_json_binary(&BankMsg::Send {
-            to_address: owner.clone(),
-            amount: vec![coin(reward, collection.reward.denom)],
-        })?,
-        funds: vec![],
-    });
+    let transfer_msg = BankMsg::Send {
+        to_address: owner.clone(),
+        amount: vec![coin(reward, collection.reward.denom)],
+    };
     let _ = STAKINGS.save(store, owner.clone(), &stakings_state);
     Ok(Response::new()
         .add_event(
