@@ -1,16 +1,17 @@
-use cosmwasm_std::Coin;
-use cw721::{Cw721ReceiveMsg};
+use cosmwasm_std::{Coin, Timestamp};
+use cw721::Cw721ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {
-    pub owner: String,
-}
+pub struct InstantiateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
+    TransferOwnership {
+        address: String,
+    },
     WhitelistCollection {
         address: String,
         reward: Coin,
@@ -19,11 +20,10 @@ pub enum ExecuteMsg {
     },
     ReceiveNft(Cw721ReceiveMsg),
     Unstake {
-        token_address: String,
-        token_id: String,
+        index: u128,
     },
     ClaimReward {
-        index: u64,
+        index: u128,
     },
 }
 
@@ -31,6 +31,8 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     GetConfig {},
+    GetCollections {},
+    GetStakingsByOwner { owner: String },
 }
 
 // responses
@@ -38,4 +40,13 @@ pub enum QueryMsg {
 #[serde(rename_all = "snake_case")]
 pub struct ConfigResponse {
     pub owner: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct CollectionResponse {
+    pub address: String,
+    pub reward: Coin,
+    pub cycle: u64,
+    pub is_whitelisted: bool,
 }

@@ -35,7 +35,6 @@ impl Collection {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Staking {
-    pub owner: String,
     pub token_address: String, // nft collection ca
     pub token_id: String,
     pub start_timestamp: Timestamp,
@@ -45,7 +44,6 @@ pub struct Staking {
 impl Staking {
     pub fn default() -> Self {
         Staking {
-            owner: String::from_str("").unwrap(),
             token_address: String::from_str("").unwrap(),
             token_id: String::from_str("").unwrap(),
             start_timestamp: Timestamp::from_seconds(0),
@@ -54,14 +52,12 @@ impl Staking {
         }
     }
     pub fn new(
-        owner: String,
         token_address: String,
         token_id: String,
         start_timestamp: Timestamp,
         is_paid: bool,
     ) -> Self {
         Staking {
-            owner,
             token_address,
             token_id,
             start_timestamp,
