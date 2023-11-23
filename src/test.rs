@@ -8,7 +8,7 @@ mod tests {
         contract::{execute, instantiate, query},
         msg::{
             CollectionResponse, CollectionTokensResponse, ConfigResponse, ExecuteMsg,
-            InstantiateMsg, QueryMsg, StakingResponse,
+            InstantiateMsg, QueryMsg, StakingResponse, StakingStateResponse,
         },
         state::Staking,
     };
@@ -150,6 +150,12 @@ mod tests {
             cw721_base_contract_address.clone().to_string()
         );
         assert_eq!(resp[0].tokens.len(), 2);
+        assert_eq!(resp[0].tokens[0].token_uri, Some("token_uri".to_owned()));
+        assert_eq!(resp[0].tokens[0].token_id, "1".to_owned());
+        assert_eq!(resp[0].tokens[0].staking_state, None);
+        assert_eq!(resp[0].tokens[1].token_uri, Some("token_uri".to_owned()));
+        assert_eq!(resp[0].tokens[1].token_id, "0".to_owned());
+        assert_eq!(resp[0].tokens[1].clone().staking_state.unwrap().index, 0);
 
         let resp: Vec<StakingResponse> = app
             .wrap()

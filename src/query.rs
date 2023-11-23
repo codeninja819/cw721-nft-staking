@@ -1,12 +1,12 @@
-use std::{sync::Arc, vec};
+use std::vec;
 
-use cosmwasm_std::{to_json_binary, Deps, Empty, Env, Order, QueryResponse, Response};
+use cosmwasm_std::{to_json_binary, Deps, Empty, Env, Order, QueryResponse};
 
 use crate::{
     error::ContractError,
     msg::{
         CollectionResponse, CollectionTokensResponse, ConfigResponse, StakingStateResponse,
-        TokenResponse,
+        TokenResponse, UniversalNftInfoResponse,
     },
     state::{Staking, COLLECTIONS, CONFIG, STAKINGS},
 };
@@ -89,21 +89,21 @@ pub fn get_all_collection_tokens_by_owner(
             },
         )?;
         for token_id in unstaked.tokens {
-            let nft_info: cw721::NftInfoResponse<Empty> = deps.querier.query_wasm_smart(
+            let UniversalNftInfoResponse { token_uri, .. } = deps.querier.query_wasm_smart(
                 address.clone(),
                 &cw721::Cw721QueryMsg::NftInfo {
-                    token_id: token_id.clone(),
+                    token_id: token_id.clone().into(),
                 },
             )?;
             collection_tokens.tokens.push(TokenResponse {
                 token_id,
-                token_uri: nft_info.token_uri,
+                token_uri,
                 staking_state: None,
             });
         }
         for index in 0..stakings.len() {
             if stakings[index].token_address == address.clone() {
-                let nft_info: cw721::NftInfoResponse<Empty> = deps.querier.query_wasm_smart(
+                let UniversalNftInfoResponse { token_uri, .. } = deps.querier.query_wasm_smart(
                     address.clone(),
                     &cw721::Cw721QueryMsg::NftInfo {
                         token_id: stakings[index].clone().token_id,
@@ -111,7 +111,7 @@ pub fn get_all_collection_tokens_by_owner(
                 )?;
                 collection_tokens.tokens.push(TokenResponse {
                     token_id: stakings[index].clone().token_id,
-                    token_uri: nft_info.token_uri,
+                    token_uri: token_uri,
                     staking_state: Some(StakingStateResponse {
                         index: u64::from_str_radix(&index.to_string(), 10).unwrap(),
                         start_timestamp: stakings[index].start_timestamp,

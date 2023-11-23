@@ -1,6 +1,7 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, Timestamp};
+use cosmwasm_std::{Coin, Timestamp, Empty};
 use cw721::Cw721ReceiveMsg;
+use serde::Deserialize;
 
 #[cw_serde]
 pub struct InstantiateMsg {}
@@ -86,4 +87,13 @@ pub struct StakingResponse {
     pub start_timestamp: Timestamp,
     pub end_timestamp: Timestamp,
     pub is_paid: bool,
+}
+
+#[derive(Deserialize)]
+pub struct UniversalNftInfoResponse {
+    pub token_uri: Option<String>,
+
+    #[serde(skip_deserializing)]
+    #[allow(dead_code)]
+    extension: Empty,
 }

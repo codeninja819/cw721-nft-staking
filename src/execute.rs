@@ -97,7 +97,7 @@ pub fn stake(
             .add_attribute("token_id", msg.token_id)
             .add_attribute("owner", owner)
             .add_attribute("start_timestamp", env.block.time.to_string())
-            .add_attribute("index", stakings_state.len().to_string()),
+            .add_attribute("index", (stakings_state.len() - 1).to_string()),
     ))
 }
 
