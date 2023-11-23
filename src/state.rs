@@ -15,6 +15,7 @@ pub struct Collection {
     pub reward: Coin,         // rewards coin denom & amount
     pub cycle: u64,           // reward cycle
     pub is_whitelisted: bool, // is whitelisted for staking
+    pub spots: u64,          // available spots
 }
 impl Collection {
     pub fn default() -> Self {
@@ -22,13 +23,15 @@ impl Collection {
             reward: coin(0, "inj"),
             cycle: 604_800, // 1 week = 7 * 24 * 60 * 60 * 1000,
             is_whitelisted: true,
+            spots: 0,
         }
     }
-    pub fn new(reward: Coin, cycle: u64, is_whitelisted: bool) -> Self {
+    pub fn new(reward: Coin, cycle: u64, is_whitelisted: bool, spots: u64) -> Self {
         Collection {
             reward,
             cycle,
-            is_whitelisted: is_whitelisted,
+            is_whitelisted,
+            spots,
         }
     }
 }

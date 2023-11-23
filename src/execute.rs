@@ -37,12 +37,13 @@ pub fn whitelist(
     reward: Coin,
     cycle: u64,
     is_whitelisted: bool,
+    spots: u64,
 ) -> Result<Response, ContractError> {
     let store = deps.branch().storage;
     check_contract_owner_only(info.clone(), store)?;
     let collection = COLLECTIONS.may_load(store, address.clone())?;
     if collection.is_none() {
-        let new_collection = Collection::new(reward.clone(), cycle.clone(), true);
+        let new_collection = Collection::new(reward.clone(), cycle.clone(), true, spots);
         COLLECTIONS.save(store, address.clone(), &new_collection)?;
     } else {
         COLLECTIONS.update(store, address.clone(), |c| -> StdResult<Collection> {
@@ -50,6 +51,7 @@ pub fn whitelist(
                 c.clone().unwrap().reward,
                 c.clone().unwrap().cycle,
                 is_whitelisted.clone(),
+                spots,
             ))
         })?;
     }

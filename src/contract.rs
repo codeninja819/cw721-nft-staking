@@ -1,7 +1,9 @@
 use crate::error::ContractError;
-use crate::execute::{stake, transfer_ownership, unstake, whitelist, claim};
+use crate::execute::{claim, stake, transfer_ownership, unstake, whitelist};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::{get_collections, get_config, get_stakings_by_owner};
+use crate::query::{
+    get_all_collection_tokens_by_owner, get_collections, get_config, get_stakings_by_owner,
+};
 use crate::state::{Config, CONFIG};
 use cosmwasm_std::{entry_point, Deps, DepsMut, Env, MessageInfo, QueryResponse, Response};
 use cw2::set_contract_version;
@@ -38,7 +40,17 @@ pub fn execute(
             reward,
             cycle,
             is_whitelisted,
-        } => whitelist(deps, env, info, address, reward, cycle, is_whitelisted),
+            spots,
+        } => whitelist(
+            deps,
+            env,
+            info,
+            address,
+            reward,
+            cycle,
+            is_whitelisted,
+            spots,
+        ),
         ExecuteMsg::ReceiveNft(msg) => stake(deps, env, info, msg),
         ExecuteMsg::Unstake { index } => unstake(deps, env, info, index),
         ExecuteMsg::ClaimReward { index } => claim(deps, env, info, index),
@@ -50,8 +62,11 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> Result<QueryResponse, ContractError> {
     match msg {
         QueryMsg::GetConfig {} => get_config(deps),
-        QueryMsg::GetCollections {} => get_collections(deps),
+        QueryMsg::GetCollections {} => get_collections(deps, _env),
         QueryMsg::GetStakingsByOwner { owner } => get_stakings_by_owner(deps, owner),
+        QueryMsg::GetAllCollectionTokensByOwner { owner } => {
+            get_all_collection_tokens_by_owner(deps, owner)
+        }
         _ => Err(ContractError::Unknown {}),
     }
 }
