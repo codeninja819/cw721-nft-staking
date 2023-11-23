@@ -101,7 +101,7 @@ pub fn get_all_collection_tokens_by_owner(
                 staking_state: None,
             });
         }
-        for index in 1..stakings.len() {
+        for index in 0..stakings.len() {
             if stakings[index].token_address == address.clone() {
                 let nft_info: cw721::NftInfoResponse<Empty> = deps.querier.query_wasm_smart(
                     address.clone(),
@@ -121,6 +121,7 @@ pub fn get_all_collection_tokens_by_owner(
                 });
             }
         }
+        all_tokens.push(collection_tokens.to_owned());
     }
-    Ok(to_json_binary(&stakings).unwrap())
+    Ok(to_json_binary(&all_tokens).unwrap())
 }

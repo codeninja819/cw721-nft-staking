@@ -1,12 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{coin, to_json_binary, Addr, CosmosMsg, Empty, Timestamp};
+    use cosmwasm_std::{coin, to_json_binary, Addr, Binary, CosmosMsg, Empty, Timestamp};
     use cw_multi_test::{App, Contract, ContractWrapper, Executor};
     use schemars::JsonSchema;
 
     use crate::{
         contract::{execute, instantiate, query},
-        msg::{CollectionResponse, ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
+        msg::{
+            CollectionResponse, CollectionTokensResponse, ConfigResponse, ExecuteMsg,
+            InstantiateMsg, QueryMsg, StakingResponse,
+        },
         state::Staking,
     };
 
@@ -40,6 +43,17 @@ mod tests {
             },
             &vec![],
         );
+        let _ = app.execute_contract(
+            owner.clone(),
+            cw721_base_contract_address.clone(),
+            &cw721_base::ExecuteMsg::<Empty, Empty>::Mint {
+                token_id: "1".to_owned(),
+                owner: owner.clone().to_string(),
+                token_uri: Some("token_uri".to_owned()),
+                extension: Empty {},
+            },
+            &vec![],
+        );
         let staking_code_id = app.store_code(staking_contract());
         let staking_contract_address = app
             .instantiate_contract(
@@ -65,6 +79,7 @@ mod tests {
                 reward: coin(10, "inj"),
                 cycle: 604_800,
                 is_whitelisted: true,
+                spots: 1000,
             },
             &vec![],
         )
@@ -84,6 +99,11 @@ mod tests {
                 reward: coin(10, "inj"),
                 cycle: 604_800,
                 is_whitelisted: true,
+                spots: 1000,
+                name: "CW721 Base".into(),
+                symbol: "CWB".into(),
+                staked: 0,
+                num_tokens: 2
             }]
         );
 
@@ -115,7 +135,23 @@ mod tests {
             )
             .unwrap();
 
-        let resp: Vec<Staking> = app
+        let resp: Vec<CollectionTokensResponse> = app
+            .wrap()
+            .query_wasm_smart(
+                staking_contract_address.clone().to_string(),
+                &QueryMsg::GetAllCollectionTokensByOwner {
+                    owner: owner.clone().to_string(),
+                },
+            )
+            .unwrap();
+        assert_eq!(resp.len(), 1);
+        assert_eq!(
+            resp[0].token_address,
+            cw721_base_contract_address.clone().to_string()
+        );
+        assert_eq!(resp[0].tokens.len(), 2);
+
+        let resp: Vec<StakingResponse> = app
             .wrap()
             .query_wasm_smart(
                 staking_contract_address.clone(),
@@ -124,6 +160,7 @@ mod tests {
                 },
             )
             .unwrap();
+        assert_eq!(resp.len(), 1);
         assert_eq!(
             resp[0].token_address,
             cw721_base_contract_address.clone().to_string()
@@ -193,7 +230,7 @@ mod tests {
             )
             .unwrap();
 
-        let resp: Vec<Staking> = app
+        let resp: Vec<StakingResponse> = app
             .wrap()
             .query_wasm_smart(
                 staking_contract_address.clone(),
