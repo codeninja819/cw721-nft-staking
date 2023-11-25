@@ -1,1 +1,1 @@
-ec9e0f10fb6001f5d93c63ea7e980a504a6707dc81ad772e3f991b2924c74eb2  staking.wasm
+09e1c5d6e9ff37e05bdbcaa184dc0feac087da9fa01efce8364d04f1c97814d0  staking.wasm

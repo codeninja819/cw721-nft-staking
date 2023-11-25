@@ -7,7 +7,7 @@ use crate::query::{
     get_all_collection_tokens_by_owner, get_collections, get_config, get_stakings_by_owner,
 };
 use crate::state::{Config, CONFIG};
-use cosmwasm_std::{entry_point, Deps, DepsMut, Env, MessageInfo, QueryResponse, Response};
+use cosmwasm_std::{coin, entry_point, Deps, DepsMut, Env, MessageInfo, QueryResponse, Response};
 use cw2::set_contract_version;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -19,6 +19,7 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     let config_state = Config {
         owner: info.clone().sender.to_string(),
+        unstake_fee: 50000000000000000,
     };
     CONFIG.save(deps.storage, &config_state)?;
     set_contract_version(deps.storage, "Injective CW721 Staking", "0.0.1")?;

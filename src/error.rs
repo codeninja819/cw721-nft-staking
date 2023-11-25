@@ -27,6 +27,9 @@ pub enum ContractError {
     #[error("Not enough reward pool")]
     NotEnoughRewardPool {},
 
+    #[error("Not enough unstake fee")]
+    NotEnoughUnstakeFee {},
+
     #[error("NFT locked")]
     Locked {},
 }

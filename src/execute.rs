@@ -167,6 +167,12 @@ pub fn unstake(
 ) -> Result<Response, ContractError> {
     let owner = info.sender.to_string();
     let store = deps.branch().storage;
+    let config_state = CONFIG.load(store)?;
+    let index = info.funds.iter().position(|r| r.denom == "inj").unwrap();
+    let amount: u128 = info.funds[index].amount.into();
+    if amount == config_state.unstake_fee {
+        return Err(ContractError::NotEnoughUnstakeFee {});
+    }
     let mut stakings_state = STAKINGS.may_load(store, owner.clone())?.unwrap();
     let staking_info = stakings_state[index].clone();
     let mut staking = &mut stakings_state[index];
