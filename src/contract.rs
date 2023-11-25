@@ -1,5 +1,7 @@
 use crate::error::ContractError;
-use crate::execute::{claim, stake, transfer_ownership, unstake, whitelist};
+use crate::execute::{
+    claim, deposit_collection_reward, stake, transfer_ownership, unstake, whitelist, withdraw_fee,
+};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
     get_all_collection_tokens_by_owner, get_collections, get_config, get_stakings_by_owner,
@@ -41,6 +43,7 @@ pub fn execute(
             cycle,
             is_whitelisted,
             spots,
+            lockup_period,
         } => whitelist(
             deps,
             env,
@@ -50,7 +53,12 @@ pub fn execute(
             cycle,
             is_whitelisted,
             spots,
+            lockup_period,
         ),
+        ExecuteMsg::DepositCollectionReward { address } => {
+            deposit_collection_reward(deps, env, info, address)
+        }
+        ExecuteMsg::WithdrawFee { fee } => withdraw_fee(deps, env, info, fee),
         ExecuteMsg::ReceiveNft(msg) => stake(deps, env, info, msg),
         ExecuteMsg::Unstake { index } => unstake(deps, env, info, index),
         ExecuteMsg::ClaimReward { index } => claim(deps, env, info, index),

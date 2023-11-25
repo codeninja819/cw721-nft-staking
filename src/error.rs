@@ -23,4 +23,10 @@ pub enum ContractError {
 
     #[error("Unknown")]
     Unknown {},
+
+    #[error("Not enough reward pool")]
+    NotEnoughRewardPool {},
+
+    #[error("NFT locked")]
+    Locked {},
 }

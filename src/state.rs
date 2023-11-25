@@ -15,23 +15,36 @@ pub struct Collection {
     pub reward: Coin,         // rewards coin denom & amount
     pub cycle: u64,           // reward cycle
     pub is_whitelisted: bool, // is whitelisted for staking
-    pub spots: u64,          // available spots
+    pub spots: u64,           // available spots
+    pub pool_amount: u128,    // Reward pool INJ amount
+    pub lockup_period: u64,
 }
 impl Collection {
     pub fn default() -> Self {
         Collection {
             reward: coin(0, "inj"),
-            cycle: 604_800, // 1 week = 7 * 24 * 60 * 60 * 1000,
+            cycle: 604_800, // 1 week = 7 * 24 * 60 * 60
             is_whitelisted: true,
             spots: 0,
+            lockup_period: 2_592_000, // 30 days = 30 * 24 * 60 * 60
+            pool_amount: 0,
         }
     }
-    pub fn new(reward: Coin, cycle: u64, is_whitelisted: bool, spots: u64) -> Self {
+    pub fn new(
+        reward: Coin,
+        cycle: u64,
+        is_whitelisted: bool,
+        spots: u64,
+        lockup_period: u64,
+        pool_amount: u128,
+    ) -> Self {
         Collection {
             reward,
             cycle,
             is_whitelisted,
             spots,
+            lockup_period,
+            pool_amount,
         }
     }
 }

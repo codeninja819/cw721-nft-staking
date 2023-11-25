@@ -1,5 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, Timestamp, Empty};
+use cosmwasm_std::{Coin, Empty, Timestamp};
 use cw721::Cw721ReceiveMsg;
 use serde::Deserialize;
 
@@ -17,13 +17,20 @@ pub enum ExecuteMsg {
         cycle: u64,
         is_whitelisted: bool,
         spots: u64,
+        lockup_period: u64,
+    },
+    DepositCollectionReward {
+        address: String,
     },
     ReceiveNft(Cw721ReceiveMsg),
     Unstake {
-        index: u128,
+        index: usize,
     },
     ClaimReward {
-        index: u128,
+        index: usize,
+    },
+    WithdrawFee {
+        fee: Coin,
     },
 }
 
@@ -57,6 +64,7 @@ pub struct CollectionResponse {
     pub symbol: String,
     pub num_tokens: u64,
     pub staked: u64,
+    pub lockup_period: u64,
 }
 
 #[cw_serde]
