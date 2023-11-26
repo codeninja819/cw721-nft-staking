@@ -180,7 +180,7 @@ pub fn unstake(
     if staking.end_timestamp != Timestamp::from_nanos(0) {
         return Err(ContractError::AlreadyUnstaked {});
     }
-    if staking.end_timestamp.seconds() - staking_info.start_timestamp.clone().seconds()
+    if env.block.time.seconds() - staking_info.start_timestamp.clone().seconds()
         < collection.lockup_period
     {
         return Err(ContractError::Locked {});
@@ -225,6 +225,9 @@ pub fn claim(
         .may_load(store, staking_info.token_address.clone())?
         .unwrap();
     let mut staking = &mut stakings_state[index];
+    if staking.end_timestamp == Timestamp::from_nanos(0) {
+        return Err(ContractError::NotUnstaked {});
+    }
     if staking.is_paid == true {
         return Err(ContractError::RewardAlreadyClaimed {});
     }
