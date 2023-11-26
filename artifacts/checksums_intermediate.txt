@@ -1,1 +1,1 @@
-c36499a50cf73270d12742521b09477ceb816c8ce27e4eedef0d044efd767625  ./target/wasm32-unknown-unknown/release/staking.wasm
+504873d9b868388b70aa1ef9c869355b03b6d85e39500c1dace21f6dda428f6c  ./target/wasm32-unknown-unknown/release/staking.wasm

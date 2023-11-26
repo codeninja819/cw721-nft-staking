@@ -233,8 +233,10 @@ pub fn claim(
     }
     staking.is_paid = true;
     let reward = u128::from(collection.reward.amount)
-        & u128::from(staking_info.end_timestamp.seconds() - staking_info.start_timestamp.seconds())
-            / &u128::from(collection.cycle);
+        * &u128::from(
+            staking_info.end_timestamp.seconds() - staking_info.start_timestamp.seconds(),
+        )
+        / &u128::from(collection.cycle);
     let _ = STAKINGS.save(store, owner.clone(), &stakings_state);
     if reward > 0 {
         if (collection.pool_amount < reward) {
