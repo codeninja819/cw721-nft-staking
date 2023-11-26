@@ -163,19 +163,23 @@ pub fn unstake(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    index: usize,
+    index: u64,
 ) -> Result<Response, ContractError> {
+    // fix issue
     let owner = info.sender.to_string();
     let store = deps.branch().storage;
     let config_state = CONFIG.load(store)?;
-    let index = info.funds.iter().position(|r| r.denom == "inj").unwrap();
-    let amount: u128 = info.funds[index].amount.into();
+    let coin_idx = info.funds.iter().position(|r| r.denom == "inj");
+    if coin_idx.is_none() {
+        return Err(ContractError::NotEnoughUnstakeFee {});
+    }
+    let amount: u128 = info.funds[coin_idx.unwrap()].amount.into();
     if amount == config_state.unstake_fee {
         return Err(ContractError::NotEnoughUnstakeFee {});
     }
     let mut stakings_state = STAKINGS.may_load(store, owner.clone())?.unwrap();
-    let staking_info = stakings_state[index].clone();
-    let mut staking = &mut stakings_state[index];
+    let staking_info = stakings_state[index as usize].clone();
+    let mut staking = &mut stakings_state[index as usize];
     let collection = COLLECTIONS.load(store, staking_info.token_address.clone())?;
     if staking.end_timestamp != Timestamp::from_nanos(0) {
         return Err(ContractError::AlreadyUnstaked {});
@@ -215,16 +219,16 @@ pub fn claim(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    index: usize,
+    index: u64,
 ) -> Result<Response, ContractError> {
     let owner = info.sender.to_string();
     let store = deps.branch().storage;
     let mut stakings_state = STAKINGS.may_load(store, owner.clone())?.unwrap();
-    let staking_info = stakings_state[index].clone();
+    let staking_info = stakings_state[index as usize].clone();
     let collection = COLLECTIONS
         .may_load(store, staking_info.token_address.clone())?
         .unwrap();
-    let mut staking = &mut stakings_state[index];
+    let mut staking = &mut stakings_state[index as usize];
     if staking.end_timestamp == Timestamp::from_nanos(0) {
         return Err(ContractError::NotUnstaked {});
     }

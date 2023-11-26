@@ -24,10 +24,10 @@ pub enum ExecuteMsg {
     },
     ReceiveNft(Cw721ReceiveMsg),
     Unstake {
-        index: usize,
+        index: u64,
     },
     ClaimReward {
-        index: usize,
+        index: u64,
     },
     WithdrawFee {
         fee: Coin,
