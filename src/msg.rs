@@ -19,7 +19,6 @@ pub enum ExecuteMsg {
         cycle: u64,
         is_whitelisted: bool,
         spots: u64,
-        lockup_period: u64,
     },
     DepositCollectionReward {
         address: String,
@@ -67,7 +66,6 @@ pub struct CollectionResponse {
     pub symbol: String,
     pub num_tokens: u64,
     pub staked: u64,
-    pub lockup_period: u64,
 }
 
 #[cw_serde]

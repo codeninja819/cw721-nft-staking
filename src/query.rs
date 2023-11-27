@@ -48,7 +48,6 @@ pub fn get_collections(deps: Deps, env: Env) -> Result<QueryResponse, ContractEr
             symbol: contract_info.clone().symbol,
             num_tokens: num_tokens.count,
             spots: collection.spots,
-            lockup_period: collection.lockup_period,
             staked: u64::from_str_radix(&staked.tokens.len().to_string(), 10).unwrap(),
         });
     }

@@ -39,14 +39,12 @@ pub fn whitelist(
     cycle: u64,
     is_whitelisted: bool,
     spots: u64,
-    lockup_period: u64,
 ) -> Result<Response, ContractError> {
     let store = deps.branch().storage;
     check_contract_owner_only(info.clone(), store)?;
     let collection = COLLECTIONS.may_load(store, address.clone())?;
     if collection.is_none() {
-        let new_collection =
-            Collection::new(reward.clone(), cycle.clone(), true, spots, lockup_period, 0);
+        let new_collection = Collection::new(reward.clone(), cycle.clone(), true, spots, 0);
         COLLECTIONS.save(store, address.clone(), &new_collection)?;
     } else {
         COLLECTIONS.update(store, address.clone(), |c| -> StdResult<Collection> {
@@ -55,7 +53,6 @@ pub fn whitelist(
                 cycle,
                 is_whitelisted,
                 spots,
-                lockup_period,
                 c.clone().unwrap().pool_amount,
             ))
         })?;
@@ -66,8 +63,7 @@ pub fn whitelist(
             .add_attribute("reward", reward.to_string())
             .add_attribute("cycle", cycle.to_string())
             .add_attribute("is_whitelisted", is_whitelisted.to_string())
-            .add_attribute("spots", spots.to_string())
-            .add_attribute("lockup_period", lockup_period.to_string()),
+            .add_attribute("spots", spots.to_string()),
     ))
 }
 
@@ -91,7 +87,6 @@ pub fn deposit_collection_reward(
                 col.cycle,
                 col.is_whitelisted,
                 col.spots,
-                col.lockup_period,
                 col.pool_amount + amount,
             ))
         })?;
@@ -177,7 +172,7 @@ pub fn unstake(
         return Err(ContractError::AlreadyUnstaked {});
     }
     if env.block.time.seconds() - staking_info.start_timestamp.clone().seconds()
-        < collection.lockup_period
+        < collection.cycle
         && info.funds != vec![config_state.unstake_fee]
     {
         return Err(ContractError::NotEnoughUnstakeFee {});
@@ -256,7 +251,6 @@ pub fn claim(
                     col.cycle,
                     col.is_whitelisted,
                     col.spots,
-                    col.lockup_period,
                     col.pool_amount - reward_amount,
                 ))
             },

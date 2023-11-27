@@ -45,7 +45,6 @@ pub fn execute(
             cycle,
             is_whitelisted,
             spots,
-            lockup_period,
         } => whitelist(
             deps,
             env,
@@ -55,7 +54,6 @@ pub fn execute(
             cycle,
             is_whitelisted,
             spots,
-            lockup_period,
         ),
         ExecuteMsg::DepositCollectionReward { address } => {
             deposit_collection_reward(deps, env, info, address)
