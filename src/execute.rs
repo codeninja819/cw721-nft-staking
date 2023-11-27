@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use std::sync::Arc;
+use std::vec;
 
 use crate::error::ContractError;
 
@@ -169,12 +170,7 @@ pub fn unstake(
     let owner = info.sender.to_string();
     let store = deps.branch().storage;
     let config_state = CONFIG.load(store)?;
-    let coin_idx = info.funds.iter().position(|r| r.denom == "inj");
-    if coin_idx.is_none() {
-        return Err(ContractError::NotEnoughUnstakeFee {});
-    }
-    let amount: u128 = info.funds[coin_idx.unwrap()].amount.into();
-    if amount == config_state.unstake_fee {
+    if info.funds != vec![config_state.unstake_fee] {
         return Err(ContractError::NotEnoughUnstakeFee {});
     }
     let mut stakings_state = STAKINGS.may_load(store, owner.clone())?.unwrap();

@@ -4,7 +4,9 @@ use cw721::Cw721ReceiveMsg;
 use serde::Deserialize;
 
 #[cw_serde]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    pub unstake_fee: Coin,
+}
 
 #[cw_serde]
 pub enum ExecuteMsg {
@@ -51,6 +53,7 @@ pub enum QueryMsg {
 #[cw_serde]
 pub struct ConfigResponse {
     pub owner: String,
+    pub unstake_fee: Coin,
 }
 
 #[cw_serde]

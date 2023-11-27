@@ -13,8 +13,11 @@ use crate::{
 
 pub fn get_config(deps: Deps) -> Result<QueryResponse, ContractError> {
     let config_state = CONFIG.load(deps.storage)?;
-    let owner = config_state.owner;
-    Ok(to_json_binary(&ConfigResponse { owner }).unwrap())
+    Ok(to_json_binary(&ConfigResponse {
+        owner: config_state.clone().owner,
+        unstake_fee: config_state.clone().unstake_fee,
+    })
+    .unwrap())
 }
 
 pub fn get_collections(deps: Deps, env: Env) -> Result<QueryResponse, ContractError> {

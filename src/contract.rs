@@ -15,17 +15,18 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    _msg: InstantiateMsg,
+    msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let config_state = Config {
         owner: info.clone().sender.to_string(),
-        unstake_fee: 50000000000000000,
+        unstake_fee: msg.unstake_fee,
     };
     CONFIG.save(deps.storage, &config_state)?;
     set_contract_version(deps.storage, "Injective CW721 Staking", "0.0.1")?;
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_attribute("contract_owner", config_state.owner))
+        .add_attribute("contract_owner", config_state.owner)
+        .add_attribute("unstake_fee", config_state.unstake_fee.to_string()))
 }
 
 #[allow(unreachable_patterns)]
