@@ -32,7 +32,4 @@ pub enum ContractError {
 
     #[error("Not enough unstake fee")]
     NotEnoughUnstakeFee {},
-
-    #[error("NFT locked")]
-    Locked {},
 }

@@ -166,13 +166,9 @@ pub fn unstake(
     info: MessageInfo,
     index: u64,
 ) -> Result<Response, ContractError> {
-    // fix issue
     let owner = info.sender.to_string();
     let store = deps.branch().storage;
     let config_state = CONFIG.load(store)?;
-    if info.funds != vec![config_state.unstake_fee] {
-        return Err(ContractError::NotEnoughUnstakeFee {});
-    }
     let mut stakings_state = STAKINGS.may_load(store, owner.clone())?.unwrap();
     let staking_info = stakings_state[index as usize].clone();
     let mut staking = &mut stakings_state[index as usize];
@@ -182,8 +178,9 @@ pub fn unstake(
     }
     if env.block.time.seconds() - staking_info.start_timestamp.clone().seconds()
         < collection.lockup_period
+        && info.funds != vec![config_state.unstake_fee]
     {
-        return Err(ContractError::Locked {});
+        return Err(ContractError::NotEnoughUnstakeFee {});
     }
     staking.end_timestamp = env.block.time;
     let transfer_msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
@@ -232,19 +229,22 @@ pub fn claim(
         return Err(ContractError::RewardAlreadyClaimed {});
     }
     staking.is_paid = true;
-    let reward = u128::from(collection.reward.amount)
+    let mut reward_amount = &u128::from(collection.reward.amount)
         * &u128::from(
             staking_info.end_timestamp.seconds() - staking_info.start_timestamp.seconds(),
         )
         / &u128::from(collection.cycle);
+    if reward_amount > u128::from(collection.reward.amount) {
+        reward_amount = u128::from(collection.reward.amount);
+    }
     let _ = STAKINGS.save(store, owner.clone(), &stakings_state);
-    if reward > 0 {
-        if (collection.pool_amount < reward) {
+    if reward_amount > 0 {
+        if collection.pool_amount < reward_amount {
             return Err(ContractError::NotEnoughRewardPool {});
         }
         let transfer_msg = BankMsg::Send {
             to_address: owner.clone(),
-            amount: vec![coin(reward, collection.clone().reward.denom)],
+            amount: vec![coin(reward_amount, collection.clone().reward.denom)],
         };
         COLLECTIONS.update(
             store,
@@ -257,7 +257,7 @@ pub fn claim(
                     col.is_whitelisted,
                     col.spots,
                     col.lockup_period,
-                    col.pool_amount - reward,
+                    col.pool_amount - reward_amount,
                 ))
             },
         )?;
@@ -275,7 +275,10 @@ pub fn claim(
                         "end_timestamp",
                         staking_info.end_timestamp.seconds().to_string(),
                     )
-                    .add_attribute("reward", coin(reward, collection.reward.denom).to_string())
+                    .add_attribute(
+                        "reward",
+                        coin(reward_amount, collection.reward.denom).to_string(),
+                    )
                     .add_attribute("index", index.to_string()),
             )
             .add_message(transfer_msg))
@@ -293,7 +296,10 @@ pub fn claim(
                     "end_timestamp",
                     staking_info.end_timestamp.seconds().to_string(),
                 )
-                .add_attribute("reward", coin(reward, collection.reward.denom).to_string())
+                .add_attribute(
+                    "reward",
+                    coin(reward_amount, collection.reward.denom).to_string(),
+                )
                 .add_attribute("index", index.to_string()),
         ))
     }
