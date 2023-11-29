@@ -25,9 +25,6 @@ pub fn get_collections(deps: Deps, env: Env) -> Result<QueryResponse, ContractEr
     for k in COLLECTIONS.keys(deps.storage, None, None, Order::Ascending) {
         let address = k.unwrap();
         let collection = COLLECTIONS.load(deps.storage, address.clone()).unwrap();
-        let contract_info: cw721::ContractInfoResponse = deps
-            .querier
-            .query_wasm_smart(address.clone(), &cw721::Cw721QueryMsg::ContractInfo {})?;
         let num_tokens: cw721::NumTokensResponse = deps
             .querier
             .query_wasm_smart(address.clone(), &cw721::Cw721QueryMsg::NumTokens {})?;
@@ -44,8 +41,6 @@ pub fn get_collections(deps: Deps, env: Env) -> Result<QueryResponse, ContractEr
             reward: collection.reward,
             cycle: collection.cycle,
             is_whitelisted: collection.is_whitelisted,
-            name: contract_info.clone().name,
-            symbol: contract_info.clone().symbol,
             num_tokens: num_tokens.count,
             spots: collection.spots,
             staked: u64::from_str_radix(&staked.tokens.len().to_string(), 10).unwrap(),

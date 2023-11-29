@@ -62,8 +62,6 @@ pub struct CollectionResponse {
     pub cycle: u64,
     pub is_whitelisted: bool,
     pub spots: u64,
-    pub name: String,
-    pub symbol: String,
     pub num_tokens: u64,
     pub staked: u64,
 }
