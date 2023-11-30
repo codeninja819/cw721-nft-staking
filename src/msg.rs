@@ -42,8 +42,6 @@ pub enum QueryMsg {
     GetConfig {},
     #[returns(Vec<CollectionResponse>)]
     GetCollections {},
-    #[returns(Vec<CollectionTokensResponse>)]
-    GetAllCollectionTokensByOwner { owner: String },
     #[returns(Vec<StakingResponse>)]
     GetStakingsByOwner { owner: String },
 }
@@ -62,29 +60,6 @@ pub struct CollectionResponse {
     pub cycle: u64,
     pub is_whitelisted: bool,
     pub spots: u64,
-    pub num_tokens: u64,
-    pub staked: u64,
-}
-
-#[cw_serde]
-pub struct CollectionTokensResponse {
-    pub token_address: String, // nft collection ca
-    pub tokens: Vec<TokenResponse>,
-}
-
-#[cw_serde]
-pub struct TokenResponse {
-    pub token_id: String,
-    pub token_uri: Option<String>,
-    pub staking_state: Option<StakingStateResponse>,
-}
-
-#[cw_serde]
-pub struct StakingStateResponse {
-    pub index: u64,
-    pub start_timestamp: Timestamp,
-    pub end_timestamp: Timestamp,
-    pub is_paid: bool,
 }
 
 #[cw_serde]
