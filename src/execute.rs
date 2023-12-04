@@ -4,6 +4,7 @@ use std::vec;
 
 use crate::error::ContractError;
 
+use crate::msg::UniversalNftReceiveMsg;
 use crate::state::{Collection, Staking, COLLECTIONS, CONFIG, STAKINGS};
 use cosmwasm_std::{
     coin, to_json_binary, BankMsg, Coin, CosmosMsg, DepsMut, Env, Event, MessageInfo, Response,
@@ -122,7 +123,7 @@ pub fn stake(
     mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    msg: Cw721ReceiveMsg,
+    msg: UniversalNftReceiveMsg,
 ) -> Result<Response, ContractError> {
     let token_address = info.sender.to_string();
     let owner = msg.clone().sender;

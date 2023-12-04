@@ -1,7 +1,7 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, Empty, Timestamp};
+use cosmwasm_std::{Binary, Coin, Empty, Timestamp};
 use cw721::Cw721ReceiveMsg;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -23,7 +23,7 @@ pub enum ExecuteMsg {
     DepositCollectionReward {
         address: String,
     },
-    ReceiveNft(Cw721ReceiveMsg),
+    ReceiveNft(UniversalNftReceiveMsg),
     Unstake {
         index: u64,
     },
@@ -78,4 +78,23 @@ pub struct UniversalNftInfoResponse {
     #[serde(skip_deserializing)]
     #[allow(dead_code)]
     extension: Empty,
+}
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct UniversalNftReceiveMsg {
+    pub sender: String,
+    pub token_id: String,
+    pub msg: Binary,
+
+    #[serde(skip_deserializing)]
+    #[allow(dead_code)]
+    pub edition: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TalisCw721ReceiveMsg {
+    pub sender: String,
+    pub token_id: String,
+    pub msg: Binary,
+    pub edition: Option<u64>,
 }
