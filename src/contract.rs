@@ -1,6 +1,7 @@
 use crate::error::ContractError;
 use crate::execute::{
-    claim, deposit_collection_reward, stake, transfer_ownership, unstake, whitelist, withdraw_fee,
+    change_fee, claim, deposit_collection_reward, stake, transfer_ownership, unstake, whitelist,
+    withdraw_fee,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{get_collections, get_config, get_stakings_by_owner};
@@ -37,6 +38,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::TransferOwnership { address } => transfer_ownership(deps, env, info, address),
+        ExecuteMsg::ChangeFee { fee } => change_fee(deps, env, info, fee),
         ExecuteMsg::WhitelistCollection {
             address,
             reward,

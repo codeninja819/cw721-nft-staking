@@ -13,6 +13,9 @@ pub enum ExecuteMsg {
     TransferOwnership {
         address: String,
     },
+    ChangeFee {
+        fee: Coin,
+    },
     WhitelistCollection {
         address: String,
         reward: Coin,

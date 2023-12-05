@@ -31,6 +31,25 @@ pub fn transfer_ownership(
     ))
 }
 
+pub fn change_fee(
+    mut deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    new_fee: Coin,
+) -> Result<Response, ContractError> {
+    let store = deps.branch().storage;
+    check_contract_owner_only(info.clone(), store)?;
+    let mut config_state = CONFIG.load(store).unwrap();
+    let old_fee = config_state.unstake_fee;
+    config_state.unstake_fee = new_fee.clone();
+    CONFIG.save(deps.storage, &config_state)?;
+    Ok(Response::new().add_event(
+        Event::new("fee_changed")
+            .add_attribute("old_fee", old_fee.to_string())
+            .add_attribute("new_fee", new_fee.to_string()),
+    ))
+}
+
 pub fn whitelist(
     mut deps: DepsMut,
     _env: Env,
@@ -172,8 +191,7 @@ pub fn unstake(
     if staking.end_timestamp != Timestamp::from_nanos(0) {
         return Err(ContractError::AlreadyUnstaked {});
     }
-    if env.block.time.seconds() - staking_info.start_timestamp.clone().seconds()
-        < collection.cycle
+    if env.block.time.seconds() - staking_info.start_timestamp.clone().seconds() < collection.cycle
         && info.funds != vec![config_state.unstake_fee]
     {
         return Err(ContractError::NotEnoughUnstakeFee {});
