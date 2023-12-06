@@ -125,6 +125,14 @@ pub fn withdraw_fee(
 ) -> Result<Response, ContractError> {
     let store = deps.branch().storage;
     check_contract_owner_only(info.clone(), store)?;
+    let mut config_state = CONFIG.load(store).unwrap();
+    let fee_amount = u128::from_str(&fee.clone().amount.to_string()).unwrap();
+    if fee_amount > config_state.fee_collected.clone() {
+        return Err(ContractError::NotEnoughFeeCollected {});
+    }
+    config_state.fee_collected = config_state.fee_collected.clone() - fee_amount;
+    CONFIG.save(deps.storage, &config_state)?;
+
     let transfer_msg = BankMsg::Send {
         to_address: info.sender.to_string(),
         amount: vec![fee.clone()],
@@ -183,7 +191,7 @@ pub fn unstake(
 ) -> Result<Response, ContractError> {
     let owner = info.sender.to_string();
     let store = deps.branch().storage;
-    let config_state = CONFIG.load(store)?;
+    let mut config_state = CONFIG.load(store)?;
     let mut stakings_state = STAKINGS.may_load(store, owner.clone())?.unwrap();
     let staking_info = stakings_state[index as usize].clone();
     let mut staking = &mut stakings_state[index as usize];
@@ -192,9 +200,14 @@ pub fn unstake(
         return Err(ContractError::AlreadyUnstaked {});
     }
     if env.block.time.seconds() - staking_info.start_timestamp.clone().seconds() < collection.cycle
-        && info.funds != vec![config_state.unstake_fee]
     {
-        return Err(ContractError::NotEnoughUnstakeFee {});
+        if info.funds == vec![config_state.unstake_fee.clone()] {
+            config_state.fee_collected = config_state.fee_collected
+                + u128::from_str(&config_state.unstake_fee.clone().amount.to_string()).unwrap();
+            CONFIG.save(store, &config_state)?;
+        } else {
+            return Err(ContractError::NotEnoughUnstakeFee {});
+        }
     }
     staking.end_timestamp = env.block.time;
     let transfer_msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {

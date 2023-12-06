@@ -13,6 +13,7 @@ pub fn get_config(deps: Deps) -> Result<QueryResponse, ContractError> {
     Ok(to_json_binary(&ConfigResponse {
         owner: config_state.clone().owner,
         unstake_fee: config_state.clone().unstake_fee,
+        fee_collected: config_state.clone().fee_collected,
     })
     .unwrap())
 }

@@ -19,6 +19,7 @@ pub fn instantiate(
     let config_state = Config {
         owner: info.clone().sender.to_string(),
         unstake_fee: msg.unstake_fee,
+        fee_collected: 0,
     };
     CONFIG.save(deps.storage, &config_state)?;
     set_contract_version(deps.storage, "Injective CW721 Staking", "0.0.1")?;

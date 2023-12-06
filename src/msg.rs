@@ -54,6 +54,7 @@ pub enum QueryMsg {
 pub struct ConfigResponse {
     pub owner: String,
     pub unstake_fee: Coin,
+    pub fee_collected: u128,
 }
 
 #[cw_serde]

@@ -9,6 +9,7 @@ use std::str::FromStr;
 pub struct Config {
     pub owner: String,
     pub unstake_fee: Coin,
+    pub fee_collected: u128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
